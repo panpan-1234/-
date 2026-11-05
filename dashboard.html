@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Blog</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #091020;
+            color: #fff;
+            font-family: "Prompt", sans-serif;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 24px 20px;
+        }
+
+        .top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            border: 0;
+            border-radius: 999px;
+            padding: 4px 16px;
+            background: #7b7d85;
+            color: #fff;
+            font: inherit;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: #5b5bff;
+            color: #000;
+            font-weight: 600;
+        }
+
+        .icon {
+            width: 22px;
+            height: 22px;
+            fill: none;
+            stroke: #fff;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #fff;
+            font: inherit;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px 40px;
+        }
+
+        .post h3 {
+            font-weight: 400;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .card {
+            display: flex;
+            background: #0d1b33;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 180px;
+            cursor: pointer;
+        }
+
+        .thumb {
+            width: 155px;
+            flex-shrink: 0;
+            background: #d9d9d9;
+        }
+
+        .thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .body {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .body p {
+            font-size: 14px;
+            color: #cfd6e4;
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .actions {
+            display: flex;
+            gap: 16px;
+        }
+
+        .liked .icon {
+            fill: #5b5bff;
+            stroke: #5b5bff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="top">
+            <div class="tabs" id="tabs"></div>
+            <button class="icon-btn" aria-label="ค้นหา">
+                <svg class="icon" viewBox="0 0 24 24">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="M21 21l-4.3-4.3" />
+                </svg>
+            </button>
+        </div>
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <script>
+        const categories = [
+            { id: "all", name: "ทั้งหมด" },
+            { id: "general", name: "ทั่วไป" },
+            { id: "summary", name: "สรุปเนื้อหา" },
+            { id: "present", name: "การพูด present" },
+            { id: "design", name: "การออกแบบ" },
+            { id: "reading", name: "เทคนิคการอ่านหนังสือ" },
+            { id: "vocab", name: "การจำคำศัพท์" }
+
+        ];
+
+        const posts = [
+            {
+                title: "Resume", cat: ["design"], image: "unnamed.png", text: "วิธีเขียน Resume ให้โดดเด่น เลือกข้อมูลที่สำคัญและจัดวางให้อ่านง่ายภายในหน้าเดียว", likes: 12, comments: 3
+            },
+            { title: "Portfio", cat: ["design"], image: "images.jpeg", text: "รวมไอเดียทำ Portfolio สำหรับสมัครงาน เลือกผลงานที่ดีที่สุดมาแสดง", likes: 8, comments: 1 },
+            { title: "เทคนิคการทำสไลด์", cat: ["present", "design"], image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_AUPVhG8aa38Db_ufKuwuRKUbdX-QKRp86emS286nQQ&s=10", text: "ทำสไลด์ให้อ่านง่ายและสวยงาม ใช้ตัวอักษรและสีอย่างเหมาะสม", likes: 20, comments: 5 },
+            { title: "การ Present ให้ดี", cat: ["present"], image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ1ZTC6cbeZr-K4DWaZvJ8A4zyRVDyGO4wpXeeCyFJFtg&s=10", text: "เทคนิคพูดหน้าห้องอย่างมั่นใจ ตั้งแต่การเตรียมตัวจนถึงการตอบคำถาม", likes: 15, comments: 4 },
+            { title: "เทคนิคการอ่านหนังสือสรุป", cat: ["summary", "reading"], image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRFcWzM7tV_Xzxre3lTkoJSVps6xhuBkbuqamdAgNXJDA&s=10", text: "อ่านหนังสือสรุปให้จำได้นานขึ้น ด้วยการจดและทบทวนซ้ำอย่างเป็นระบบ", likes: 9, comments: 2 },
+            { title: "เทคนิคการจำคำศัพท์", cat: ["vocab"], image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQvsCADdDP8YX1A71YzKiVtlqM51kgS9XXGmkKyhQqcIA&s=10", text: "จำคำศัพท์ภาษาอังกฤษได้ง่ายขึ้น ด้วยการเชื่อมโยงกับภาพและเรื่องราว", likes: 18, comments: 6 },
+            { title: "วิธีเลิกขี้เกียจ", cat: ["general"], image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSQPI7x00TrBPBRpMjloenCPC9nSTqbxmHFxN4v0lnEDw&s=10", text: "เริ่มต้นลงมือทำโดยไม่ผัดวันประกันพรุ่ง แบ่งงานใหญ่เป็นงานย่อยๆ", likes: 25, comments: 8 },
+            { title: "วิธีหารายได้เสริม", cat: ["general"], image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRmkoGYzNkZgvIM2Sxeb8T0bU2ZqEwJ8EDj41vTm_oIQA&s=10", text: "ไอเดียหารายได้เสริมสำหรับนักศึกษา ที่ทำได้จริงและไม่กระทบการเรียน", likes: 30, comments: 9 }
+        ];
+
+        const thumbIcon = '<svg class="icon" viewBox="0 0 24 24"><path d="M7 11v9H4v-9h3zM7 11l4-8c1.5 0 2.5 1 2.5 2.5V9H19a2 2 0 0 1 2 2.3l-1.2 7A2 2 0 0 1 17.8 20H7"/></svg>';
+
+        const tabsEl = document.getElementById("tabs");
+        const gridEl = document.getElementById("grid");
+        let current = "all";
+
+        function renderTabs() {
+            tabsEl.innerHTML = categories.map(c =>
+                `<button class="tab ${c.id === current ? "active" : ""}" data-id="${c.id}">${c.name}</button>`
+            ).join("");
+        }
+
+        function renderPosts() {
+            const list = posts.filter(p => current === "all" || p.cat.includes(current));
+            gridEl.innerHTML = list.map(p => `
+    <div class="post">
+      <h3>${p.title}</h3>
+      <div class="card">
+        <div class="thumb">${p.image ? `<img src="${p.image}" alt="${p.title}">` : ""}</div>
+        <div class="body">
+          <p>${p.text}</p>
+          <div class="actions">
+            <button class="icon-btn like ${p.liked ? "liked" : ""}" data-index="${posts.indexOf(p)}">${thumbIcon}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join("");
+        }
+
+        tabsEl.addEventListener("click", e => {
+            const btn = e.target.closest(".tab");
+            if (!btn) return;
+            current = btn.dataset.id;
+            renderTabs();
+            renderPosts();
+        });
+
+        gridEl.addEventListener("click", e => {
+            const like = e.target.closest(".like");
+            if (!like) return;
+            const post = posts[like.dataset.index];
+            post.liked = !post.liked;
+            like.classList.toggle("liked");
+        });
+
+        renderTabs();
+        renderPosts();
+    </script>
+</body>
+
+</html>
